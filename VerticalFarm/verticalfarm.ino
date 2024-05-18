@@ -2,32 +2,36 @@
 #include <Wire.h>
 #include <BH1750.h>
 
-#define DHTPIN 2     
-#define RELAYPIN 3     
- 
-#define DHTTYPE DHT11 
+#include <ArduinoJson.h>
+
+#define DHTPIN 2
+#define RELAYPIN_WATER_MOTOR 3
+#define RELAYPIN_FAN_MOTOR 4
+
+#define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
- 
-BH1750 lightMeter;
 
+BH1750 lightMeter(0x23);
 
-void setup() 
-{
+void setup() {
   Serial.begin(9600);
 
   dht.begin();
   Wire.begin();
   lightMeter.begin();
 
-  pinMode(RELAYPIN, OUTPUT);
-  digitalWrite(RELAYPIN, LOW);
+  pinMode(RELAYPIN_WATER_MOTOR, OUTPUT);
+  pinMode(RELAYPIN_FAN_MOTOR, OUTPUT);
+
+  digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
+  digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
 }
 
-void loop() { 
+void loop() {
   float h = dht.readHumidity();
   float t = dht.readTemperature();
-  int soilH1 = analogRead(A0);
-  int soilH2 = analogRead(A1);
+  int soilH1 = analogRead(A1);
+  int soilH2 = analogRead(A2);
   uint16_t lux = lightMeter.readLightLevel();
 
   Serial.print("Humidity: " + String(h) + "\n");
@@ -40,6 +44,6 @@ void loop() {
   delay(2000);
 }
 
-void motorControll(h, t, soilH1, soilH2, lux){
-  digitalWrite(RELAYPIN, HIGH);
+void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
+  digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
 }
