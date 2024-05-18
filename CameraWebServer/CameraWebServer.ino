@@ -148,7 +148,7 @@ void setup(){
     if (client.connect(serverName.c_str(), serverPort)){
       Serial.println("Connected to server: " + serverName);
       http.begin(client, "http://" + serverName + ":" + serverPort + "/add-farm");
-   
+  
       http.addHeader("Content-Type", "application/json");
       int httpResponseCode = http.POST("{\"ip\":\"" + (WiFi.localIP()).toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(password) + "\"}");
     
@@ -193,4 +193,5 @@ void setup(){
 }
 
 void loop() {
+  delay(1000);
 }

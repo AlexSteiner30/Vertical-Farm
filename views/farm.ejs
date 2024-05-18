@@ -192,8 +192,8 @@
               <!-- Floating Labels Form -->
               <form class="row g-3">
                 <div class="col-md-12">
-                  <div class="form-floating">
-                    <img id="stream" src="http://<%=ip%>:81/stream%>" crossorigin="" style="border-radius: 20px;">
+                  <div class="form-floating" id="container">
+                    <div><img id="stream" src="http://<%=ip%>:81/stream%>" crossorigin="" style="border-radius: 20px; width: 40%;"></div>
                   </div>
                 </div>
               </form><!-- End floating Labels Form -->
@@ -317,6 +317,15 @@
       alert("Fans were disabled/enabled");
       await fetch("http://<%=ip%>:8080/fans");
     }
+
+    function rotatePhoto() {
+      var img = document.getElementById("stream");
+      var deg = 90;
+      if(isOdd(deg/90)){ document.getElementById("container").style.marginBottom = "10%"; }
+      else{ document.getElementById("container").style.marginBottom = "0%" }
+      img.style.transform = "rotate(" + deg + "deg)";
+    }
+    function isOdd(n) { return Math.abs(n % 2) == 1; }
   </script>
 </body>
 

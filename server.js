@@ -189,7 +189,13 @@ async function collectData(){
   Farm.find({}).then(x => x.forEach(async function(y){
     chartData.forEach(async function(dataPoint){
       if(dataPoint.name = y.id.toString()){
-        dataPoint.data.push((await (await fetch("http://" + y.ip + ":8080/")).json()));
+        const isOnline = await isIpOnline(y.ip);
+        if(isOnline){
+          dataPoint.data.push((await (await fetch("http://" + y.ip + ":8080/")).json()));
+        }
+        else{
+          dataPoint.data.push({"soilHum1": 0, 'soilHum2': 0, 'airTemp': 0, 'airHum':0, 'light': 0});
+        }
       }
     });
   }));
