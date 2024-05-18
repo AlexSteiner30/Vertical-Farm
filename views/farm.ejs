@@ -89,7 +89,7 @@
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/">Home</a></li>
           <li class="breadcrumb-item">Farms</li>
-          <li class="breadcrumb-item active">Farm 1</li>
+          <li class="breadcrumb-item active"><%=farm_name%></li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -109,10 +109,10 @@
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-cart"></i>
+                      <i class="bi bi-wind"></i>
                     </div>
                     <div class="ps-3">
-                      <h6><%=data[0]%></h6>
+                      <h6><%=data.soilHum1%> - <%=data.soilHum2%></h6>
                     </div>
                   </div>
                 </div>
@@ -129,10 +129,10 @@
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-currency-dollar"></i>
+                      <i class="bi bi-moisture"></i>
                     </div>
                     <div class="ps-3">
-                      <h6><%=data[1]%></h6>
+                      <h6><%=data.airHum%></h6>
                     </div>
                   </div>
                 </div>
@@ -149,10 +149,10 @@
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-people"></i>
+                      <i class="bi bi-thermometer-half"></i>
                     </div>
                     <div class="ps-3">
-                      <h6><%=data[2]%></h6>
+                      <h6><%=data.airTemp%></h6>
                     </div>
                   </div>
 
@@ -164,16 +164,16 @@
             <!-- Customers Card -->
             <div class="col-xxl-3 col-xl-5">
 
-              <div class="card info-card customers-card">
+              <div class="card info-card sales-card">
                 <div class="card-body">
                   <h5 class="card-title">Light</span></h5>
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-people"></i>
+                      <i class="bi-lightbulb"></i>
                     </div>
                     <div class="ps-3">
-                      <h6><%=data[3]%></h6>
+                      <h6><%=data.light%></h6>
                     </div>
                   </div>
 
@@ -193,7 +193,7 @@
               <form class="row g-3">
                 <div class="col-md-12">
                   <div class="form-floating">
-                   <video controls src="../Video.mp4" style="height: 90%; width: 100%; border-radius: 20px;">
+                    <img id="stream" src="http://<%=ip%>:81/stream%>" crossorigin="" style="border-radius: 20px;">
                   </div>
                 </div>
               </form><!-- End floating Labels Form -->
@@ -208,7 +208,7 @@
                 <h5 class="card-title">Fans</span></h5>
 
                 <div class="d-flex align-items-center">
-                  <button type="submit" class="btn btn-primary">Disable / Enable</button>
+                  <button onclick="fans()" type="submit" class="btn btn-primary">Disable / Enable</button>
               </div>
             </div>
 
@@ -220,56 +220,70 @@
               <h5 class="card-title">Details</h5>
 
               <!-- Floating Labels Form -->
-              <form class="row g-3">
-                <div class="col-md-12">
+              <form class="row g-3" method="post" action="/farm/<%=id%>/update">
+                <div class="col-md-3">
                   <div class="form-floating">
-                    <input type="text" class="form-control" id="floatingName" placeholder="Test">
+                    <input type="text" class="form-control" id="floatingName" placeholder="Test" name="farmName">
                     <label for="floatingName">Farm Name: <b><%=name%></b></label>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="floatingName" placeholder="Test" name="id" disabled>
+                    <label for="floatingName">ID: <b><%=id%></b></label>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="form-floating">
-                    <input type="email" class="form-control" id="floatingEmail" placeholder="SSID">
+                    <input type="text" class="form-control" id="floatingName" placeholder="Test" disabled>
+                    <label for="floatingName">IP Address: <b><%=ip%></b></label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input type="email" class="form-control" id="floatingEmail" placeholder="SSID" disabled>
                     <label for="floatingEmail">SSID: <b><%=ssid%></b></label>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="form-floating">
-                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" disabled>
                     <label for="floatingPassword">Password: <b><%=password%></b></label>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="form-floating mb-3">
-                    <select class="form-select" id="floatingSelect" aria-label="State">
+                    <select class="form-select" id="floatingSelect" aria-label="State" name="plantType">
                       <option selected>Potatoes</option>
                       <option value="1">Strawberries</option>
                       <option value="2">Cherries</option>
+                      <option value="3">Tomatoes</option>
+                      <option value="4">Others</option>
                     </select>
                     <label for="floatingSelect">Plant Type: <b><%=plantType%></b></label>
                   </div>
                 </div>
                 <div class="col-md-2">
                   <div class="form-floating">
-                    <input type="text" class="form-control" id="floatingZip" placeholder="Zip">
+                    <input type="number" class="form-control" id="floatingZip" placeholder="Zip" name="soilHum">
                     <label for="floatingZip">Soil Humidity: <b><%=soilHum%></b></label>
                   </div>
                 </div>
                 <div class="col-md-2">
                   <div class="form-floating">
-                    <input type="text" class="form-control" id="floatingZip" placeholder="Zip">
+                    <input type="number" class="form-control" id="floatingZip" placeholder="Zip" name="airTemp">
                     <label for="floatingZip">Air Degrees: <b><%=airTemp%></b></label>
                   </div>
                 </div>
                 <div class="col-md-2">
                   <div class="form-floating">
-                    <input type="text" class="form-control" id="floatingZip" placeholder="Zip">
+                    <input type="number" class="form-control" id="floatingZip" placeholder="Zip" name="airHum">
                     <label for="floatingZip">Air Humidity: <b><%=airHum%></b></label>
                   </div>
                 </div>
                 <div class="col-md-2">
                   <div class="form-floating">
-                    <input type="text" class="form-control" id="floatingZip" placeholder="Zip">
+                    <input type="number" class="form-control" id="floatingZip" placeholder="Zip" name="light">
                     <label for="floatingZip">Light: <b><%=light%></b></label>
                   </div>
                 </div>
@@ -298,7 +312,12 @@
 
   <!-- Template Main JS File -->
   <script src="../assets/js/main.js"></script>
-
+  <script>
+    async function fans(){
+      alert("Fans were disabled/enabled");
+      await fetch("http://<%=ip%>:8080/fans");
+    }
+  </script>
 </body>
 
 </html>
