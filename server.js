@@ -148,7 +148,13 @@ async function loadFarms(){
     app.get(`/farm/${y._id}`, async (req, res) => {
       var farms = [];
 
-      data = await (await fetch("http://" + y.ip + ":8080/")).json();
+      const isOnline = await isIpOnline(y.ip);
+      if(isOnline){
+        data = await (await fetch("http://" + y.ip + ":8080/")).json();
+      }
+      else{
+        data = {"soilHum1": "N/A", "soilHum2": "N/A", "airHum": "N/A", "airTemp": "N/A", "light":"N/A"}
+      }
 
       await Farm.find({}).then(x => x.forEach(function(y){
         farms.push(y);
