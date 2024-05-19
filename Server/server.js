@@ -3,21 +3,33 @@ const mongoose = require('mongoose');
 const ping = require('ping');
 const bodyParser = require('body-parser');
 
-require('dotenv').config()
+require('dotenv').config();
 
 const URI = process.env.MONGO_URI;
+const PORT = 4000;
 
 const app = express();
+
 app.set('view engine', 'ejs');
+app.set('trust proxy', true);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static('public'))
+app.use(express.static('public'));
+
+app.use((req,res,next) =>{
+  req.time = new Date(Date.now()).toString();
+  console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[36m%s\x1b[0m', req.method, req.path, res.statusCode, req.socket.address());
+  next();
+});
+
 
 var chartData = [];
 var recentActivity = [];
 
-mongoose.connect(URI);
+mongoose.connect(URI)
+.then()
+  console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mMongo DB\x1b[32m sucessfully\x1b[0m connected!');
 
 async function isIpOnline(ip) {
   return new Promise((resolve, reject) => {
@@ -64,6 +76,7 @@ app.get('/', async (req, res) => {
             activeFarms++;
           } else {
             recentActivity.push("Farm with IP <strong>" + farm.ip + "</strong> disconnected")
+            console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + farm.ip + ' \x1b[0mis\x1b[31m down\x1b[0m!');
             nonActiveFarms++;
           }
       });
@@ -134,18 +147,35 @@ app.post('/add-farm', async (req, res) => {
       await farm.save();
 
       recentActivity.push("A new farm with IP <strong>" + req.body.ip + "</strong> was added")
+      
       await loadFarms();
-      console.log("Farm Was Added");
+      console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[was added\x1b[32m successfully\x1b[0m!', farm);
+      
       await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": farm.soilHum, "idealAirTemp": farm.airTemp, "idealAirHum": farm.airHum, "idealLight": farm.light}))
-      .then()
+      .then(response => response.json())
+      .then(data => 
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data),
         res.send('Okay')
+      )
+      .catch(error => 
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[32m failed\x1b[0m!', error),
+        res.send('Okay')
+      )
+
     }
     else{
       recentActivity.push("Farm with IP <strong>" + req.body.ip + "</strong> connected")
-      console.log("Farm Already Exists");
+      console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[connected\x1b[32m successfully\x1b[0m!');
       await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": result.soilHum, "idealAirTemp": result.airTemp, "idealAirHum": result.airHum, "ideaLight": res.light}))
-      .then()
-        res.send('Okay');
+      .then(response => response.json())
+      .then(data => 
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data),
+        res.send('Okay')
+      )
+      .catch(error => 
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[32m failed\x1b[0m!', error),
+        res.send('Okay')
+      )
     }
   }); 
 });
@@ -178,7 +208,7 @@ async function loadFarms(){
         await Farm.find({}).then(x => x.forEach(function(z){
           y = z;
         })).then()
-          res.render('farm', {id:y._id.toString(), farms:farms, ip:y.ip, farm_name:y.name, data: data, name: y.name, ssid: y.ssid, password: y.password, plantType: y.plantType, soilHum: y.soilHum, airTemp: y.airTemp, airHum: y.airHum, light: y.light});
+          res.render('farm', {id:y._id.toString(), isOnline:isOnline, farms:farms, ip:y.ip, farm_name:y.name, data: data, name: y.name, ssid: y.ssid, password: y.password, plantType: y.plantType, soilHum: y.soilHum, airTemp: y.airTemp, airHum: y.airHum, light: y.light});
     });
 
     app.post(`/farm/${y._id}/update`, async (req, res) => {
@@ -197,10 +227,20 @@ async function loadFarms(){
         if(req.body.airHum){airHum=req.body.airHum};
         if(req.body.light){light=req.body.light};
 
-        recentActivity.push('Farm with IP <strong>' + z.ip + "</strong> was updated" )
+        recentActivity.push('Farm with IP <strong>' + z.ip + "</strong> was updated" );
 
-        await fetch('http://' + z.ip + '/update?' + new URLSearchParams({"idealSoilHum": soilHum, "idealAirTemp": airTemp, "idealAirHum": airHum, "idealLight": light}));  
-        await Farm.findOneAndUpdate({_id: z._id}, {name:farmName, plantType: plantType, soilHum: soilHum, airTemp: airTemp, airHum:airHum, light:light})
+        await fetch('http://' + z.ip + '/update?' + new URLSearchParams({"idealSoilHum": soilHum, "idealAirTemp": airTemp, "idealAirHum": airHum, "idealLight": light}))
+          .then(response => response.json())
+          .then(data => 
+            console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + z.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
+          )
+          .catch(error => 
+            console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + z.ip + ' \x1b[32m failed\x1b[0m!', error)
+          )
+
+        await Farm.findOneAndUpdate({_id: z._id}, {name:farmName, plantType: plantType, soilHum: soilHum, airTemp: airTemp, airHum:airHum, light:light}).then(updated_farm=>{
+          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + z.ip + ' \x1b[0mwas updated\x1b[32m successfully\x1b[0m!', updated_farm);
+        });
 
         res.redirect(`/farm/${y._id}`)
       })
@@ -215,9 +255,11 @@ async function collectData(){
         const isOnline = await isIpOnline(y.ip);
         if(isOnline){
           dataPoint.data.push((await (await fetch("http://" + y.ip + ":8080/")).json()));
+          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mNew data collected!', dataPoint);
         }
         else{
           dataPoint.data.push({"soilHum1": 0, 'soilHum2': 0, 'airTemp': 0, 'airHum':0, 'light': 0});
+          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + y.ip + ' \x1b[0mis\x1b[31m down\x1b[0m!');
         }
       }
     });
@@ -229,4 +271,4 @@ collectData();
 
 setInterval(collectData, 60 * 60 * 1000);
 
-app.listen(4000, () => console.log('Server listening on port 4000!'));
+app.listen(PORT, () => console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mServer listening on port \x1b[33m'+ PORT + '\x1b[0m!'));

@@ -193,7 +193,11 @@
               <form class="row g-3">
                 <div class="col-md-12">
                   <div class="form-floating" id="container">
-                    <div><img id="stream" src="http://<%=ip%>:81/stream%>" crossorigin="" style="border-radius: 20px; width: 40%;"></div>
+                    <% if(isOnline){ %>
+                      <div><img id="stream" src="http://<%=ip%>:81/stream%>" crossorigin="" style="border-radius: 20px; width: 40%;"></div>
+                    <%}else{%>
+                      <h6>Farm is not connected!</h6>
+                    <%}%>
                   </div>
                 </div>
               </form><!-- End floating Labels Form -->
