@@ -254,11 +254,11 @@
                 <div class="col-md-4">
                   <div class="form-floating mb-3">
                     <select class="form-select" id="floatingSelect" aria-label="State" name="plantType">
-                      <option selected>Potatoes</option>
-                      <option value="1">Strawberries</option>
-                      <option value="2">Cherries</option>
-                      <option value="3">Tomatoes</option>
-                      <option value="4">Others</option>
+                      <option value="Potatoes" <%= plantType == "Potatoes" ? "selected" : "" %>>Potatoes</option>
+                      <option value="Strawberries" <%= plantType == "Strawberries" ? "selected" : "" %>>Strawberries</option>
+                      <option value="Cherries" <%= plantType == "Cherries" ? "selected" : "" %>>Cherries</option>
+                      <option value="Tomatoes" <%= plantType == "Tomatoes" ? "selected" : "" %>>Tomatoes</option>
+                      <option value="Others" <%= plantType == "Others" ? "selected" : "" %>>Others</option>                      
                     </select>
                     <label for="floatingSelect">Plant Type: <b><%=plantType%></b></label>
                   </div>

@@ -59,7 +59,7 @@ app.get('/', async (req, res) => {
           if (isOnline) {
             activeFarms++;
           } else {
-            recentActivity.push("Farm with IP " + farm.ip + " disconnected")
+            recentActivity.push("Farm with IP <strong>" + farm.ip + "</strong> disconnected")
             nonActiveFarms++;
           }
       });
@@ -129,17 +129,19 @@ app.post('/add-farm', async (req, res) => {
     
       await farm.save();
 
-      recentActivity.push("A new farm with IP " + req.body.ip + " was added")
+      recentActivity.push("A new farm with IP <strong>" + req.body.ip + "</strong> was added")
       await loadFarms();
       console.log("Farm Was Added");
-      await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": farm.soilHum, "idealAirTemp": farm.airTemp, "idealAirHum": farm.airHum, "idealLight": farm.light}));
-      res.send('Okay');
+      await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": farm.soilHum, "idealAirTemp": farm.airTemp, "idealAirHum": farm.airHum, "idealLight": farm.light}))
+      .then()
+        res.send('Okay')
     }
     else{
-      recentActivity.push("Farm with IP " + req.body.ip + " connected")
+      recentActivity.push("Farm with IP <strong>" + req.body.ip + "</strong> connected")
       console.log("Farm Already Exists");
-      await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": result.soilHum, "idealAirTemp": result.airTemp, "idealAirHum": result.airHum, "ideaLight": res.light}));
-      res.json('Okay');
+      await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": result.soilHum, "idealAirTemp": result.airTemp, "idealAirHum": result.airHum, "ideaLight": res.light}))
+      .then()
+        res.send('Okay');
     }
   }); 
 });
@@ -190,6 +192,8 @@ async function loadFarms(){
         if(req.body.airTemp){airTemp=req.body.airTemp};
         if(req.body.airHum){airHum=req.body.airHum};
         if(req.body.light){light=req.body.light};
+
+        activeFarms.append('Farm with IP <strong>' + z.ip + "</strong> was updated" )
 
         await fetch('http://' + z.ip + '/update?' + new URLSearchParams({"idealSoilHum": soilHum, "idealAirTemp": airTemp, "idealAirHum": airHum, "idealLight": light}));  
         await Farm.findOneAndUpdate({_id: z._id}, {name:farmName, plantType: plantType, soilHum: soilHum, airTemp: airTemp, airHum:airHum, light:light})
