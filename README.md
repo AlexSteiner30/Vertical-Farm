@@ -39,7 +39,7 @@ To set up the Vertical Farm System, follow these steps:
 
 2. **Install Dependencies**
    ```bash
-   npm install mongoose ping body-parser express
+   npm install mongoose ping body-parser express  dotenv
    ```
 
 3. **Configure MongoDB**
