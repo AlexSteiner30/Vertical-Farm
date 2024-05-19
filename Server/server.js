@@ -193,7 +193,7 @@ async function loadFarms(){
         if(req.body.airHum){airHum=req.body.airHum};
         if(req.body.light){light=req.body.light};
 
-        activeFarms.append('Farm with IP <strong>' + z.ip + "</strong> was updated" )
+        recentActivity.push('Farm with IP <strong>' + z.ip + "</strong> was updated" )
 
         await fetch('http://' + z.ip + '/update?' + new URLSearchParams({"idealSoilHum": soilHum, "idealAirTemp": airTemp, "idealAirHum": airHum, "idealLight": light}));  
         await Farm.findOneAndUpdate({_id: z._id}, {name:farmName, plantType: plantType, soilHum: soilHum, airTemp: airTemp, airHum:airHum, light:light})
