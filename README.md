@@ -62,7 +62,7 @@ To set up the Vertical Farm System, follow these steps:
    | Light Sensor (BH1750)                         | 1          | €8.99     | [Buy Here](https://www.amazon.it/Aihasd-rilevatore-Illumination-Alimentazione-VCompatibile/dp/B01IBGDH7C/ref=sr_1_2?__mk_it_IT=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=8U5L99U9TLTX&dib=eyJ2IjoiMSJ9.uTgUvJ4qEysmwXmJxPOqgZwJHN71oEQGV1tiYz7JiDtxisgeMAhST89gsZHpj5MBZXQOQ5kcW0FNdh4ZV7xRZXMf4W6Xm5FUf-vxlz3Sq8mqZk_YPoUKO6bcqIzX_QVkmNloU5fWuWX2HDR2gxWADddothnzCyGIo9ZOi5mADt7zjxNqDXBDwwj8XYi3ZDLgq1gn0KnM-AKU_4sf_wc8ogeAE4WxjcY5dYlgbCWyRSNH8ma_8OA370WBup6k1gv0bjEfII9xjq5c-E842_hdrzYGNuTWT0z8X2zV5VuszQ0.JowZsPP_DJKy_8250Uy6gXsVY0MJ7LPEhUYEdVS7Zgg&dib_tag=se&keywords=light+sensor+bh1750&qid=1716083542&sprefix=light+sensor+bh1750%2Caps%2C93&sr=8-2)           |
    | Jumper Wire Cables                            | 1          | €9.15     | [Buy Here](https://www.amazon.it/Cavetti-Maschio-Femmina-Arduino-Raspberry/dp/B07QYTK3Q4/ref=sr_1_2?__mk_it_IT=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=2KOP6Z2W4MT3Z&dib=eyJ2IjoiMSJ9.cQG_3mdtzbRVTRi0xuTt3ucZHvDNRiKOGbJK5OqouKGJuE9el702ocIB3VIXECMRGsrErd-jTLCBoSMLNKEr-U9PErdUU-Zj3HgZ8WsyV7aHF2flU7I-1slz1HxKftiCPw3QKzrlKWeUWpLmm-xDNDNCRKjjdHQ7YOtEaRtISvi02DbbkqtYuo2yS0laNSy1MXgpAgPrf7T-Ts3k8okbXdNckraHf2WrNudADdYxWk4y9CDhyhu4J1c_D8IBJKPf57cyWmgCUT_VA3IfzxTLgZEUeOYuvyS8V2-EE5tVwGU.qXmbVqreoT2WxjFNsxEN6P9TZEK7jX4YnEEoCEMuP5Y&dib_tag=se&keywords=jumper+wire+cables&qid=1716083566&sprefix=jumper+wire+cables%2Caps%2C91&sr=8-2)           |
 
-   Total price is `€106.94`.Below is the sketch of the system setup. This diagram shows how each component is connected to the Arduino Uno and powered by the 9V batteries.
+   The total price is `€106.94`. Below is the sketch of the system setup. This diagram shows how each component is connected to the Arduino Uno and powered by the 9V batteries.
 
    <img width="812" alt="Sketch" src="https://github.com/AlexSteiner30/Vertical-Farm/assets/65250433/8d373b8c-aeeb-4022-b7b3-578016f7d1f2">
 
@@ -78,7 +78,7 @@ To set up the Vertical Farm System, follow these steps:
 ## Usage
 1. **Start the Server**
    ```bash
-   node server
+   node server.js
    ```
 
 2. **Access the Web Interface**
