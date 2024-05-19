@@ -43,7 +43,7 @@ To set up the Vertical Farm System, follow these steps:
    ```
 
 3. **Configure MongoDB**
-   Ensure MongoDB is installed and running on your machine or use a cloud MongoDB service. Update the connection string in `Server/index.js`.
+   Ensure MongoDB is installed and running on your machine or use a cloud MongoDB service. Update the connection string in `Server/.env` under `MONGO_URI`.
 
 4. **Sketch**
    The following table provides a detailed list of sensors and components needed for our project. It includes the name of each sensor, the quantity required, and convenient links to 
@@ -113,7 +113,7 @@ To set up the Vertical Farm System, follow these steps:
 ## Troubleshooting
 - **ESP32 Camera Not Accessible**: Ensure the camera is connected to the same network and check port forwarding settings if accessing externally.
 - **Sensor Data Not Updating**: Verify connections between the Arduino and sensors, and ensure the web server is running.
-- **Database Connection Issues**: Check MongoDB service status and ensure the connection string in `Server/server.js` is correct.
+- **Database Connection Issues**: Check MongoDB service status and ensure the connection string in `Server/.env` under `MONGO_URI`. is correct.
 
 ## Future Improvements
 - Implement authentication and user roles for better security.
