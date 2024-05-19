@@ -3,15 +3,19 @@ const mongoose = require('mongoose');
 const ping = require('ping');
 const bodyParser = require('body-parser');
 
-const URI = "mongodb+srv://alexsteiner:T8ILgFlQk6rVDT72@cluster.sr4kalk.mongodb.net/";
+require('dotenv').config()
+
+const URI = process.env.MONGO_URI;
+
+const app = express();
+app.set('view engine', 'ejs');
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('public'))
+
 var chartData = [];
 var recentActivity = [];
-const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(express.json());
-app.set('view engine', 'ejs');
-app.use(express.static('public'))
 
 mongoose.connect(URI);
 
