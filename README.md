@@ -66,14 +66,34 @@ To set up the Vertical Farm System, follow these steps:
 
    <img width="812" alt="Sketch" src="https://github.com/AlexSteiner30/Vertical-Farm/assets/65250433/8d373b8c-aeeb-4022-b7b3-578016f7d1f2">
 
-5. **Upload Code to ESP32 and Arduino**
-   - Navigate to the `VerticalFarm/` directories to upload the necessary code to the Arduino.
-   - Navigate to the  `CameraWebServer/` directories to upload the necessary code to the ESP32 Camera.
+5. **Install Arduino Libraries**
+   - In your Arduino IDE, go to **File> Preferences**
+   - Enter the following into the “Additional Board Manager URLs” field:
+     `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
+     Then, click the “OK” button.
+   - Open the Boards Manager. Go to **Tools > Board > Boards Manager…**
+   - Search for ESP32 and press the install button for the “ESP32 by Espressif Systems“ _version 2.0.5_
+   - It should be installed after a few seconds.
+   - Download the [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer/archive/master.zip) and [AsyncTCP](https://github.com/me-no-dev/AsyncTCP/archive/master.zip) libraries
+   - iI your Arduino IDE, go to **Sketch > Include Library > Add .zip Library** and select the libraries you’ve just downloaded
+
+6. **Upload Code to ESP32 and Arduino**
+   - Navigate to the `VerticalFarm/` directory, and upload the `VerticalFarm.ino` file to your Arduino UNO.
+   - Navigate to the  `CameraWebServer/` directory and open the `CameraWebServer.ino` file.
+   - Change the `password` and `password` to your WiFi credentials,
+   - Substitute `serverName` and `port` with the details of your server 
+   - Go to **Tools > Board** and select **AI-Thinker ESP32-CAM**
+   - Go to **Tools > Port** and select the COM port the ESP32-CAM is connected to.
+   - Then, click the **Upload** button in your Arduino IDE.
+   - When you start to see some dots on the debugging window, press the ESP32-CAM on-board RST button.
+   - After a few seconds, the code should be successfully uploaded to your board.
+   - When you see the **“Done uploading”** message, you need to remove `GPIO 0` from `GND` and press the RST button to run your new code.
+   - Conncect the `RX` and `TX` pins of the Arduino Uno with respectfully the `TX` and `RX` pins of the FTDI Programmer   
 
 ## Configuration
 1. **Network Configuration**
    - Ensure your ESP32 and Arduino are connected to the same network as the web server.
-   - If required, configure port forwarding for external access to the ESP32 Camera.
+   - If required, configure port forwarding for external access the server exertanlly.
 
 ## Usage
 1. **Start the Server**
@@ -84,16 +104,16 @@ To set up the Vertical Farm System, follow these steps:
 2. **Access the Web Interface**
    - Open your browser and navigate to `http://localhost:4000` (or the configured port).
    - The index page displays active farms, power usage, recent activities, and sensor data graphs.
-
+  
 3. **Manage Farms**
    - Use the sidebar to navigate between different farms.
    - Each farm page displays real-time sensor values, camera feed, and control options for the water and fan systems.
-   - Modify farm settings using the provided forms and save changes to update the database and devices in real-time.
+   - Modify farm settings using the provided forms and save changes to update the database and devices in real time.
 
 ## Troubleshooting
 - **ESP32 Camera Not Accessible**: Ensure the camera is connected to the same network and check port forwarding settings if accessing externally.
 - **Sensor Data Not Updating**: Verify connections between the Arduino and sensors, and ensure the web server is running.
-- **Database Connection Issues**: Check MongoDB service status and ensure the connection string in `config/db.js` is correct.
+- **Database Connection Issues**: Check MongoDB service status and ensure the connection string in `Server/server.js` is correct.
 
 ## Future Improvements
 - Implement authentication and user roles for better security.
