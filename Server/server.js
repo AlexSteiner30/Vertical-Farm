@@ -73,11 +73,20 @@ app.get('/', async (req, res) => {
       var lightValues = [];
 
       for(var i = 0; i < chartData.length; i++){
-        soilHum1Values.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.soilHum1).concat(Array(6 - chartData[i].data.map(entry => entry.soilHum1).length).fill(0)).reverse()});
-        soilHum2Values.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.soilHum2).concat(Array(6 - chartData[i].data.map(entry => entry.soilHum2).length).fill(0)).reverse()});
-        airTempValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.airTemp).concat(Array(6 - chartData[i].data.map(entry => entry.airTempValues).length).fill(0)).reverse()});
-        airHumValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.airHum).concat(Array(6 - chartData[i].data.map(entry => entry.airHumValues).length).fill(0)).reverse()});
-        lightValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.light).concat(Array(6 - chartData[i].data.map(entry => entry.lightValues).length).fill(0)).reverse()});
+        if((6 - chartData[i].data.map(entry => entry.soilHum1).length) > 0){
+          soilHum1Values.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.soilHum1).concat(Array(6 - chartData[i].data.map(entry => entry.soilHum1).length).fill(0)).reverse()});
+          soilHum2Values.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.soilHum2).concat(Array(6 - chartData[i].data.map(entry => entry.soilHum2).length).fill(0)).reverse()});
+          airTempValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.airTemp).concat(Array(6 - chartData[i].data.map(entry => entry.airTempValues).length).fill(0)).reverse()});
+          airHumValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.airHum).concat(Array(6 - chartData[i].data.map(entry => entry.airHumValues).length).fill(0)).reverse()});
+          lightValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.light).concat(Array(6 - chartData[i].data.map(entry => entry.lightValues).length).fill(0)).reverse()});
+        }
+        else{
+          soilHum1Values.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.soilHum1).reverse().slice(0,6)});
+          soilHum2Values.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.soilHum2).reverse().slice(0,6)});
+          airTempValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.airTemp).reverse().slice(0,6)});
+          airHumValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.airHum).reverse().slice(0,6)});
+          lightValues.push({name: chartData[i].id, data: chartData[i].data.map(entry => entry.light).reverse().slice(0,6)});
+        }
       }
 
       res.render('index', {
