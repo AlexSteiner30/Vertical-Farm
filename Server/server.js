@@ -151,31 +151,30 @@ app.post('/add-farm', async (req, res) => {
       await loadFarms();
       console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[was added\x1b[32m successfully\x1b[0m!', farm);
       
-      await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": farm.soilHum, "idealAirTemp": farm.airTemp, "idealAirHum": farm.airHum, "idealLight": farm.light}))
-      .then(response => response.json())
-      .then(data => 
-        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data),
-        res.send('Okay')
+      await fetch('http://' + req.body.ip + ':8080/update')
+      .then(
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
       )
       .catch(error => 
         console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[32m failed\x1b[0m!', error),
-        res.send('Okay')
       )
 
+      res.send(farm._id.toString());
     }
     else{
       recentActivity.push("Farm with IP <strong>" + req.body.ip + "</strong> connected")
       console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[connected\x1b[32m successfully\x1b[0m!');
-      await fetch('http://' + req.body.ip + '/update?' + new URLSearchParams({"idealSoilHum": result.soilHum, "idealAirTemp": result.airTemp, "idealAirHum": result.airHum, "ideaLight": res.light}))
-      .then(response => response.json())
-      .then(data => 
-        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data),
-        res.send('Okay')
+      await fetch('http://' + req.body.ip + ':8080/update')
+      .then(
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
       )
       .catch(error => 
-        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[32m failed\x1b[0m!', error),
-        res.send('Okay')
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[32m failed\x1b[0m!', error)
       )
+
+      await Farm.find({"ip" : req.body.ip}).then(x => x.forEach(function(y){
+        res.send(y._id.toString());
+      }))
     }
   }); 
 });
@@ -229,21 +228,30 @@ async function loadFarms(){
 
         recentActivity.push('Farm with IP <strong>' + z.ip + "</strong> was updated" );
 
-        await fetch('http://' + z.ip + '/update?' + new URLSearchParams({"idealSoilHum": soilHum, "idealAirTemp": airTemp, "idealAirHum": airHum, "idealLight": light}))
-          .then(response => response.json())
-          .then(data => 
-            console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + z.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
-          )
-          .catch(error => 
-            console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + z.ip + ' \x1b[32m failed\x1b[0m!', error)
-          )
-
         await Farm.findOneAndUpdate({_id: z._id}, {name:farmName, plantType: plantType, soilHum: soilHum, airTemp: airTemp, airHum:airHum, light:light}).then(updated_farm=>{
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + z.ip + ' \x1b[0mwas updated\x1b[32m successfully\x1b[0m!', updated_farm);
         });
 
+        await fetch('http://' + req.body.ip + ':8080/update')
+        .then(
+          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
+        )
+        .catch(error => 
+          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[32m failed\x1b[0m!', error)
+        )
+
         res.redirect(`/farm/${y._id}`)
       })
+    });
+
+    app.post(`/${y._id}/data`, async (req, res) => {
+  
+      var soilHum = y.soilHum;
+      var airTemp = y.airTemp;
+      var airHum = y.airHum;
+      var light = y.light;
+
+      res.send(soilHum.toString() + " " + airTemp.toString() + " " + airHum.toString() + " " + light.toString());
     });
   }));
 }
