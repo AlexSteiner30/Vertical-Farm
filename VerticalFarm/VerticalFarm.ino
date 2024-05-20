@@ -1,8 +1,11 @@
 #include "DHT.h"
 #include <Wire.h>
 #include <BH1750.h>
-
 #include <ArduinoJson.h>
+#include <SPI.h>
+#include <SoftwareSerial.h>
+
+SoftwareSerial espSerial(6, 7);
 
 #define DHTPIN 2
 #define RELAYPIN_WATER_MOTOR 3
@@ -23,8 +26,10 @@ void setup() {
   pinMode(RELAYPIN_WATER_MOTOR, OUTPUT);
   pinMode(RELAYPIN_FAN_MOTOR, OUTPUT);
 
-  digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
-  digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
+  digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
+  digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
+
+  espSerial.begin(115200);
 }
 
 void loop() {
@@ -41,6 +46,10 @@ void loop() {
   Serial.print("Light: " + String(lux) + "\n");
   Serial.print("\n");
 
+  digitalWrite(SS, LOW);
+  SPI.transfer("Hello from Arduino!"); // Send data
+  digitalWrite(SS, HIGH);
+  
   delay(2000);
 }
 

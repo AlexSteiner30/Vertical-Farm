@@ -6,6 +6,7 @@
 #include <HTTPClient.h>
 #include <ESPAsyncWebSrv.h>
 #include "base64.h"
+#include <SPI.h>
 
 int idealSoilHum;
 int idealAirTemp;
@@ -14,12 +15,13 @@ int idealLight;
 
 bool fans = false;
 
-const char* ssid = "alexnoemi";
-const char* password = "hf73tgherhf56";
+const char* ssid = "Student_SmartDevice";
+const char* password = "Sm4rtD3v!c3";
+String ID;
 
-String serverName = "192.168.88.9";   
+String serverName = "172.26.16.77";
 
-String serverPath = "/"; 
+String serverPath = "/";
 
 const int serverPort = 4000;
 
@@ -28,7 +30,7 @@ bool firstConnection = true;
 WiFiClient client;
 HTTPClient http;
 
-AsyncWebServer server(8080); 
+AsyncWebServer server(8080);
 
 #define CAMERA_MODEL_AI_THINKER
 
@@ -37,7 +39,7 @@ AsyncWebServer server(8080);
 void startCameraServer();
 void setupLedFlash(int pin);
 
-void setup(){
+void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -63,17 +65,17 @@ void setup(){
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_UXGA;
-  config.pixel_format = PIXFORMAT_JPEG; // for streaming
+  config.pixel_format = PIXFORMAT_JPEG;  // for streaming
   //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
   config.fb_count = 1;
-  
+
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
-  if(config.pixel_format == PIXFORMAT_JPEG){
-    if(psramFound()){
+  if (config.pixel_format == PIXFORMAT_JPEG) {
+    if (psramFound()) {
       config.jpeg_quality = 10;
       config.fb_count = 2;
       config.grab_mode = CAMERA_GRAB_LATEST;
@@ -102,15 +104,15 @@ void setup(){
     return;
   }
 
-  sensor_t * s = esp_camera_sensor_get();
+  sensor_t* s = esp_camera_sensor_get();
   // initial sensors are flipped vertically and colors are a bit saturated
   if (s->id.PID == OV3660_PID) {
-    s->set_vflip(s, 1); // flip it back
-    s->set_brightness(s, 1); // up the brightness just a bit
-    s->set_saturation(s, -2); // lower the saturation
+    s->set_vflip(s, 1);        // flip it back
+    s->set_brightness(s, 1);   // up the brightness just a bit
+    s->set_saturation(s, -2);  // lower the saturation
   }
   // drop down frame size for higher initial frame rate
-  if(config.pixel_format == PIXFORMAT_JPEG){
+  if (config.pixel_format == PIXFORMAT_JPEG) {
     s->set_framesize(s, FRAMESIZE_QVGA);
   }
 
@@ -145,53 +147,83 @@ void setup(){
   Serial.println("' to connect");
 
   while (firstConnection) {
-    if (client.connect(serverName.c_str(), serverPort)){
+    if (client.connect(serverName.c_str(), serverPort)) {
       Serial.println("Connected to server: " + serverName);
       http.begin(client, "http://" + serverName + ":" + serverPort + "/add-farm");
-  
+
       http.addHeader("Content-Type", "application/json");
       int httpResponseCode = http.POST("{\"ip\":\"" + (WiFi.localIP()).toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(password) + "\"}");
-    
+
       Serial.print("Response Code: ");
       Serial.println(httpResponseCode);
+
+      ID = http.getString();
+      http.end();
+
+      Serial.println("Connected to server: " + serverName);
+      http.begin(client, "http://" + serverName + ":" + serverPort + "/" + ID + "/data");
+
+      http.addHeader("Content-Type", "application/json");
+      httpResponseCode = http.POST("{}");
+
+      Serial.print("Response Code: ");
+      Serial.println(httpResponseCode);
+
+      Serial.println(http.getString());
+      http.end();
 
       firstConnection = false;
 
       http.end();
       client.stop();
-    }
-    else {
-      Serial.println("Connection to " + serverName +  " failed.");
+    } else {
+      Serial.println("Connection to " + serverName + " failed.");
     }
   }
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) { 
-	  Serial.println("Data sent"); 
-	  request->send(200, "application/json", "{\"soilHum1\":\"679\",\"soilHum2\":\"610\",\"airTemp\":\"30\",\"airHum\":\"49.54\",\"light\":\"1005.14\"}"); 
-	}); 
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+    Serial.println("Data sent");
+    request->send(200, "application/json", "{\"soilHum1\":\"679\",\"soilHum2\":\"610\",\"airTemp\":\"30\",\"airHum\":\"49.54\",\"light\":\"1005.14\"}");
+  });
 
-  server.on("/update", HTTP_GET, [](AsyncWebServerRequest* request) { 
-    Serial.println(request->hasParam("idealSoilHum"));
+  server.on("/update", HTTP_GET, [](AsyncWebServerRequest* request) {
+    bool updated;
+    while (!updated) {
+      if (client.connect(serverName.c_str(), serverPort)) {
+        Serial.println("Connected to server: " + serverName);
+        http.begin(client, "http://" + serverName + ":" + serverPort + "/" + ID + "/data");
 
-    idealSoilHum = request->getParam("idealSoilHum")->value().toInt();
-    idealAirHum = request->getParam("idealAirHum")->value().toInt();
-    idealAirTemp = request->getParam("idealAirTemp")->value().toInt();
-    idealLight = request->getParam("idealLight")->value().toInt();
+        http.addHeader("Content-Type", "application/json");
+        int httpResponseCode = http.POST("{}");
 
-    Serial.println(idealSoilHum);
+        Serial.print("Response Code: ");
+        Serial.println(httpResponseCode);
 
-	  request->send(200, "text/plain", "Okay"); 
-	}); 
+        Serial.println(http.getString());
 
-  server.on("/fans", HTTP_GET, [](AsyncWebServerRequest * request) {
+        updated = true;
+
+        http.end();
+        client.stop();
+      } else {
+        Serial.println("Connection to " + serverName + " failed.");
+      }
+    }
+
+    request->send(200, "text/plain", "Okay");
+  });
+
+  server.on("/fans", HTTP_GET, [](AsyncWebServerRequest* request) {
     fans = !fans;
     request->send(200, "text/plain", "Fans Enabled/Disabled");
   });
 
-	server.begin(); 
-
+  server.begin();
 }
 
 void loop() {
-  delay(1000);
+  if (SPI.available()) {
+    String data = SPI.transfer(); // Receive data
+    Serial.println("Received: " + data); // Print received data to Serial Monitor
+  }
 }
