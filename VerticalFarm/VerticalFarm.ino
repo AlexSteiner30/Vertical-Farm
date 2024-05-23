@@ -177,7 +177,23 @@ void sensors(){
 }
 
 void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
-  digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
+  if(soilH1 > idealSoil + 250 || soilH2 > idealSoil + 250){
+    digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
+    delay(10000);
+    digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
+  }
+  if(t > ideal + 7 || h > ideal + 20 || h < ideal - 20){
+    digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
+  }
+  else{
+    digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
+  }
+  if(lux > ideaLight + 1000){
+    // turns lights off
+  }
+  if(lux < ideaLight - 1000){
+    // turns lights on
+  }
 }
 
 void updateSensorData(String sensorData){
