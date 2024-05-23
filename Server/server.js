@@ -151,7 +151,7 @@ app.post('/add-farm', async (req, res) => {
       await loadFarms();
       console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[was added\x1b[32m successfully\x1b[0m!', farm);
       
-      await fetch('http://' + req.body.ip + ':8080/update')
+      await fetch('http://' + req.body.ip + ':80/update')
       .then(
         console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
       )
@@ -164,7 +164,7 @@ app.post('/add-farm', async (req, res) => {
     else{
       recentActivity.push("Farm with IP <strong>" + req.body.ip + "</strong> connected")
       console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[connected\x1b[32m successfully\x1b[0m!');
-      await fetch('http://' + req.body.ip + ':8080/update')
+      await fetch('http://' + req.body.ip + ':80/update')
       .then(
         console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
       )
@@ -194,7 +194,7 @@ async function loadFarms(){
 
       const isOnline = await isIpOnline(y.ip);
       if(isOnline){
-        data = await (await fetch("http://" + y.ip + ":8080/")).json();
+        data = await (await fetch("http://" + y.ip + ":80/")).json();
       }
       else{
         data = {"soilHum1": "N/A", "soilHum2": "N/A", "airHum": "N/A", "airTemp": "N/A", "light":"N/A"}
@@ -232,7 +232,7 @@ async function loadFarms(){
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + z.ip + ' \x1b[0mwas updated\x1b[32m successfully\x1b[0m!', updated_farm);
         });
 
-        await fetch('http://' + req.body.ip + ':8080/update')
+        await fetch('http://' + req.body.ip + ':80/update')
         .then(
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
         )
@@ -262,7 +262,7 @@ async function collectData(){
       if(dataPoint.name = y.id.toString()){
         const isOnline = await isIpOnline(y.ip);
         if(isOnline){
-          dataPoint.data.push((await (await fetch("http://" + y.ip + ":8080/")).json()));
+          dataPoint.data.push((await (await fetch("http://" + y.ip + ":80/")).json()));
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mNew data collected!', dataPoint);
         }
         else{

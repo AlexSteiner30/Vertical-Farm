@@ -3,34 +3,6 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
-#include <HTTPClient.h>
-#include <ESPAsyncWebSrv.h>
-#include "base64.h"
-#include <SPI.h>
-
-int idealSoilHum;
-int idealAirTemp;
-int idealAirHum;
-int idealLight;
-
-bool fans = false;
-
-const char* ssid = "Student_SmartDevice";
-const char* password = "Sm4rtD3v!c3";
-String ID;
-
-String serverName = "172.26.16.77";
-
-String serverPath = "/";
-
-const int serverPort = 4000;
-
-bool firstConnection = true;
-
-WiFiClient client;
-HTTPClient http;
-
-AsyncWebServer server(8080);
 
 #define CAMERA_MODEL_AI_THINKER
 
@@ -141,89 +113,8 @@ void setup() {
   Serial.println("WiFi connected");
 
   startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
-
-  while (firstConnection) {
-    if (client.connect(serverName.c_str(), serverPort)) {
-      Serial.println("Connected to server: " + serverName);
-      http.begin(client, "http://" + serverName + ":" + serverPort + "/add-farm");
-
-      http.addHeader("Content-Type", "application/json");
-      int httpResponseCode = http.POST("{\"ip\":\"" + (WiFi.localIP()).toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(password) + "\"}");
-
-      Serial.print("Response Code: ");
-      Serial.println(httpResponseCode);
-
-      ID = http.getString();
-      http.end();
-
-      Serial.println("Connected to server: " + serverName);
-      http.begin(client, "http://" + serverName + ":" + serverPort + "/" + ID + "/data");
-
-      http.addHeader("Content-Type", "application/json");
-      httpResponseCode = http.POST("{}");
-
-      Serial.print("Response Code: ");
-      Serial.println(httpResponseCode);
-
-      Serial.println(http.getString());
-      http.end();
-
-      firstConnection = false;
-
-      http.end();
-      client.stop();
-    } else {
-      Serial.println("Connection to " + serverName + " failed.");
-    }
-  }
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    Serial.println("Data sent");
-    request->send(200, "application/json", "{\"soilHum1\":\"679\",\"soilHum2\":\"610\",\"airTemp\":\"30\",\"airHum\":\"49.54\",\"light\":\"1005.14\"}");
-  });
-
-  server.on("/update", HTTP_GET, [](AsyncWebServerRequest* request) {
-    bool updated;
-    while (!updated) {
-      if (client.connect(serverName.c_str(), serverPort)) {
-        Serial.println("Connected to server: " + serverName);
-        http.begin(client, "http://" + serverName + ":" + serverPort + "/" + ID + "/data");
-
-        http.addHeader("Content-Type", "application/json");
-        int httpResponseCode = http.POST("{}");
-
-        Serial.print("Response Code: ");
-        Serial.println(httpResponseCode);
-
-        Serial.println(http.getString());
-
-        updated = true;
-
-        http.end();
-        client.stop();
-      } else {
-        Serial.println("Connection to " + serverName + " failed.");
-      }
-    }
-
-    request->send(200, "text/plain", "Okay");
-  });
-
-  server.on("/fans", HTTP_GET, [](AsyncWebServerRequest* request) {
-    fans = !fans;
-    request->send(200, "text/plain", "Fans Enabled/Disabled");
-  });
-
-  server.begin();
 }
 
 void loop() {
-  if (SPI.available()) {
-    String data = SPI.transfer(); // Receive data
-    Serial.println("Received: " + data); // Print received data to Serial Monitor
-  }
+
 }
