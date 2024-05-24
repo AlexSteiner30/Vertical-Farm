@@ -43,6 +43,7 @@ const Farm = mongoose.model('Farm', {
   ssid: String, 
   password: String, 
   ip: String,
+  cameraIP: String,
   plantType: String, 
   soilHum: Number, 
   airTemp: Number, 
@@ -136,6 +137,7 @@ app.post('/add-farm', async (req, res) => {
         name: "Farm_" + req.body.ip, 
         ssid: req.body.ssid, 
         ip: req.body.ip,
+        cameraIP: req.body.camera_ip,
         password: req.body.password, 
         plantType: "Potatoes", 
         soilHum: 50, 
@@ -207,7 +209,7 @@ async function loadFarms(){
         await Farm.find({}).then(x => x.forEach(function(z){
           y = z;
         })).then()
-          res.render('farm', {id:y._id.toString(), isOnline:isOnline, farms:farms, ip:y.ip, farm_name:y.name, data: data, name: y.name, ssid: y.ssid, password: y.password, plantType: y.plantType, soilHum: y.soilHum, airTemp: y.airTemp, airHum: y.airHum, light: y.light});
+          res.render('farm', {id:y._id.toString(), isOnline:isOnline, farms:farms, ip:y.ip, camera_ip:y.camera_ip, farm_name:y.name, data: data, name: y.name, ssid: y.ssid, password: y.password, plantType: y.plantType, soilHum: y.soilHum, airTemp: y.airTemp, airHum: y.airHum, light: y.light});
     });
 
     app.post(`/farm/${y._id}/update`, async (req, res) => {
@@ -245,13 +247,12 @@ async function loadFarms(){
     });
 
     app.post(`/${y._id}/data`, async (req, res) => {
-  
       var soilHum = y.soilHum;
       var airTemp = y.airTemp;
       var airHum = y.airHum;
       var light = y.light;
 
-      res.send(soilHum.toString() + " " + airTemp.toString() + " " + airHum.toString() + " " + light.toString());
+      res.send("soilHum:"+soilHum.toString() + ",airTemp:" + airTemp.toString() + ",airHum:" + airHum.toString() + ",light:" + light.toString());
     });
   }));
 }

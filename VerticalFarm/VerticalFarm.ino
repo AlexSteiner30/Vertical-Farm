@@ -73,7 +73,7 @@ void setup() {
       http.begin(client, "http://" + serverName + ":" + serverPort + "/add-farm");
 
       http.addHeader("Content-Type", "application/json");
-      int httpResponseCode = http.POST("{\"ip\":\"" + (WiFi.localIP()).toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(password) + "\"}");
+      int httpResponseCode = http.POST("{\"ip\":\"" + (WiFi.localIP()).toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(password) "\",\"camera_ip\":\"" + cameraIP + "\"}");
 
       Serial.print("Response Code: ");
       Serial.println(httpResponseCode);
@@ -191,7 +191,7 @@ void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
   if(lux > ideaLight + 1000){
     // turns lights off
   }
-  if(lux < ideaLight - 1000){
+  else if(lux < ideaLight - 1000){
     // turns lights on
   }
 }
