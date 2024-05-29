@@ -262,7 +262,7 @@ async function collectData(){
     chartData.forEach(async function(dataPoint){
       if(dataPoint.name = y.id.toString()){
         const isOnline = await isIpOnline(y.ip);
-        console.log(y.ip)
+
         if(isOnline){
           try{
             dataPoint.data.push((await (await fetch("http://" + y.ip + ":80/")).json()));
