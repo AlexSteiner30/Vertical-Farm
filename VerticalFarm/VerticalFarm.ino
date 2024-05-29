@@ -1,30 +1,35 @@
 #include "DHT.h"
 #include <Wire.h>
 #include <BH1750.h>
-#include <ArduinoJson.h>
-#include <HTTPClient.h>
-#include <ESPAsyncWebSrv.h>
 #include <WiFiS3.h>
+#include <ArduinoHttpClient.h>
 
 #define DHTPIN 2
 #define RELAYPIN_WATER_MOTOR 3
 #define RELAYPIN_FAN_MOTOR 4
+#define RELAYPIN_LIGHT 5
 
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
 BH1750 lightMeter(0x23);
 
-int idealSoil, idealTemp, idealHum, idealLight;
+int status = WL_IDLE_STATUS;
+
+int idealSoil = 700;
+int idealTemp = 25;
+int idealHum = 75;
+int idealLight = 600;
+
 bool fans = false;
 
-const char* ssid = "Student_SmartDevice";
-const char* password = "Sm4rtD3v!c3";
+const char* ssid = "James ";
+const char* pass = "james007";
 
 String data;
 
-String serverName = "172.26.16.77";
-String cameraIP = "172.26.16.77";
+String serverName = "172.20.10.3";
+String cameraIP = "172.20.10.3";
 
 String serverPath = "/";
 String ID;
@@ -33,14 +38,12 @@ const int serverPort = 4000;
 
 bool firstConnection = true;
 
-WiFiClient client;
-HTTPClient http;
-
-AsyncWebServer server(80);
+WiFiServer server(80);
+WiFiClient wifiClient;
+HttpClient httpClient = HttpClient(wifiClient, serverName, serverPort);
 
 void setup() {
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
   Serial.println();
 
   dht.begin();
@@ -49,63 +52,15 @@ void setup() {
 
   pinMode(RELAYPIN_WATER_MOTOR, OUTPUT);
   pinMode(RELAYPIN_FAN_MOTOR, OUTPUT);
+  pinMode(RELAYPIN_LIGHT, OUTPUT);
 
   digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
   digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
+  digitalWrite(RELAYPIN_LIGHT, HIGH);
 
-  WiFi.begin(ssid, password);
-  WiFi.setSleep(false);
+  delay(20000);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
-
-  while (firstConnection) {
-    if (client.connect(serverName.c_str(), serverPort)) {
-      Serial.println("Connected to server: " + serverName);
-      http.begin(client, "http://" + serverName + ":" + serverPort + "/add-farm");
-
-      http.addHeader("Content-Type", "application/json");
-      int httpResponseCode = http.POST("{\"ip\":\"" + (WiFi.localIP()).toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(password) "\",\"camera_ip\":\"" + cameraIP + "\"}");
-
-      Serial.print("Response Code: ");
-      Serial.println(httpResponseCode);
-
-      ID = http.getString();
-      http.end();
-
-      Serial.println("Connected to server: " + serverName);
-      http.begin(client, "http://" + serverName + ":" + serverPort + "/" + ID + "/data");
-
-      http.addHeader("Content-Type", "application/json");
-      httpResponseCode = http.POST("{}");
-
-      Serial.print("Response Code: ");
-      Serial.println(httpResponseCode);
-
-      Serial.println(http.getString());
-
-      String sensorData = http.getString();
-      updateSensorData(sensorData);
-
-      http.end();
-
-      firstConnection = false;
-
-      http.end();
-      client.stop();
-    } else {
-      Serial.println("Connection to " + serverName + " failed.");
-    }
-  }
-
+  wifiConnection();
   startServer();
 }
 
@@ -113,53 +68,139 @@ void loop() {
   sensors();
 }
 
-void startServer(){
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    Serial.println("Data sent");
-    request->send(200, "application/json", data);  
-  });
+void wifiConnection(){
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    status = WiFi.begin(ssid, pass);
 
-  server.on("/update", HTTP_GET, [](AsyncWebServerRequest* request) {
-    bool updated;
-    while (!updated) {
-      if (client.connect(serverName.c_str(), serverPort)) {
-        Serial.println("Connected to server: " + serverName);
-        http.begin(client, "http://" + serverName + ":" + serverPort + "/" + ID + "/data");
+    delay(10000);
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
 
-        http.addHeader("Content-Type", "application/json");
-        int httpResponseCode = http.POST("{}");
+  Serial.print("Use 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("' to connect");
 
-        Serial.print("Response Code: ");
-        Serial.println(httpResponseCode);
+  while (firstConnection) {
+    if (wifiClient.connect(serverName.c_str(), serverPort)) {
+      String addFarmUrl = "/add-farm";
+      Serial.println("Connecting to server: " + String(serverName) + addFarmUrl);
 
-        Serial.println(http.getString());
+      httpClient.beginRequest();
+      httpClient.post(addFarmUrl);
+      httpClient.sendHeader("Content-Type", "application/json");
+      String postData = "{\"ip\":\"" + WiFi.localIP().toString() + "\",\"ssid\":\"" + String(ssid) + "\",\"password\":\"" + String(pass) + "\",\"camera_ip\":\"" + cameraIP + "\"}";
+      httpClient.sendHeader("Content-Length", postData.length());
+      httpClient.beginBody();
+      httpClient.print(postData);
+      httpClient.endRequest();
+      
+      int httpResponseCode = httpClient.responseStatusCode();
+      Serial.print("Response Code: ");
+      Serial.println(httpResponseCode);
 
-        String sensorData = http.getString();
-        updateSensorData(sensorData);
+      ID = httpClient.responseBody();
 
-        updated = true;
+      String dataUrl = "/" + ID + "/data";
+      Serial.println("Connecting to server: " + String(serverName) + dataUrl);
 
-        http.end();
-        client.stop();
-      } else {
-        Serial.println("Connection to " + serverName + " failed.");
-      }
+      httpClient.beginRequest();
+      httpClient.post(dataUrl);
+      httpClient.sendHeader("Content-Type", "application/json");
+      httpClient.sendHeader("Content-Length", 2);
+      httpClient.beginBody();
+      httpClient.print("{}");
+      httpClient.endRequest();
+
+      httpResponseCode = httpClient.responseStatusCode();
+      Serial.print("Response Code: ");
+      Serial.println(httpResponseCode);
+
+
+      String sensorData = httpClient.responseBody();
+      updateSensorData(sensorData);
+
+      firstConnection = false;
+      wifiClient.stop();
+    } else {
+      Serial.println("Connection to " + serverName + " failed.");
     }
+  }
+}
 
-    request->send(200, "text/plain", "Okay");
-  });
-
-  server.on("/fans", HTTP_GET, [](AsyncWebServerRequest* request) {
-    fans = !fans;
-    if(fans){
-      digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
-    }else{
-      digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
-    }
-    request->send(200, "text/plain", "Fans Enabled/Disabled");
-  });
-
+void startServer() {
   server.begin();
+  Serial.println("Server started");
+
+  while (true) {
+    WiFiClient client = server.available();
+    if (client) {
+      Serial.println("New Client.");
+      String currentLine = "";
+      while (client.connected()) {
+        if (client.available()) {
+          char c = client.read();
+          Serial.write(c);
+          if (c == '\n') {
+            if (currentLine.length() == 0) {
+              client.println("HTTP/1.1 200 OK");
+              client.println("Content-type:text/html");
+              client.println();
+
+              if (client.readString().indexOf("GET / ") >= 0) {
+                Serial.println("Data sent");
+                client.print("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n");
+                client.print(data);
+              } else if (currentLine.indexOf("GET /update ") >= 0) {
+                bool updated = false;
+                while (!updated) {
+                  if (wifiClient.connect(serverName.c_str(), serverPort)) {
+                    String dataUrl = "/" + ID + "/data";
+                    Serial.println("Connecting to server: " + String(serverName) + dataUrl);
+
+                    httpClient.beginRequest();
+                    httpClient.post(dataUrl);
+                    httpClient.sendHeader("Content-Type", "application/json");
+                    httpClient.sendHeader("Content-Length", 2);
+                    httpClient.beginBody();
+                    httpClient.print("{}");
+                    httpClient.endRequest();
+
+                    int httpResponseCode = httpClient.responseStatusCode();
+                    Serial.print("Response Code: ");
+                    Serial.println(httpResponseCode);
+
+                    String sensorData = httpClient.responseBody();
+                    updateSensorData(sensorData);
+
+                    updated = true;
+                    wifiClient.stop();
+                  } else {
+                    Serial.println("Connection to " + serverName + " failed.");
+                  }
+                }
+
+                client.print("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nOkay");
+              } else if (currentLine.indexOf("GET /fans ") >= 0) {
+                fans = !fans;
+                digitalWrite(RELAYPIN_WATER_MOTOR, fans ? HIGH : LOW);
+                client.print("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFans Enabled/Disabled");
+              }
+              break;
+            } else {
+              currentLine = "";
+            }
+          } else if (c != '\r') {
+            currentLine += c;
+          }
+        }
+      }
+      client.stop();
+      Serial.println("Client Disconnected.");
+    }
+  }
 }
 
 void sensors(){
@@ -170,8 +211,9 @@ void sensors(){
   uint16_t lux = lightMeter.readLightLevel();
 
   data = "{\"airHum\":\"" + String(h) + "\",\"airTemp\":\"" + String(t) + "\",\"soilHum1\":\"" + String(soilH1) + "\",\"soilHum2\":\"" + String(soilH2) + "\",\"light\":\"" + String(lux) + "\"}";
+  Serial.println(data);
 
-  motorControll(h, t, soilH1 soilH2, lux);
+  motorControll(h, t, soilH1, soilH2, lux);
 
   delay(2000);
 }
@@ -182,16 +224,16 @@ void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
     delay(10000);
     digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
   }
-  if(t > ideal + 7 || h > ideal + 20 || h < ideal - 20){
+  if(t > idealTemp + 7 || h > idealHum + 20 || h < idealHum - 20){
     digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
   }
   else{
     digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
   }
-  if(lux > ideaLight + 1000){
+  if(lux > idealLight + 1000){
     // turns lights off
   }
-  else if(lux < ideaLight - 1000){
+  else if(lux < idealLight - 1000){
     // turns lights on
   }
 }

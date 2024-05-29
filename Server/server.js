@@ -155,7 +155,7 @@ app.post('/add-farm', async (req, res) => {
       
       await fetch('http://' + req.body.ip + ':80/update')
       .then(
-        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!')
       )
       .catch(error => 
         console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + farm.ip + ' \x1b[32m failed\x1b[0m!', error),
@@ -168,7 +168,7 @@ app.post('/add-farm', async (req, res) => {
       console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + req.body.ip + ' \x1b[connected\x1b[32m successfully\x1b[0m!');
       await fetch('http://' + req.body.ip + ':80/update')
       .then(
-        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
+        console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!')
       )
       .catch(error => 
         console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[32m failed\x1b[0m!', error)
@@ -236,7 +236,7 @@ async function loadFarms(){
 
         await fetch('http://' + req.body.ip + ':80/update')
         .then(
-          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!', data)
+          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!')
         )
         .catch(error => 
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[32m failed\x1b[0m!', error)
@@ -262,9 +262,13 @@ async function collectData(){
     chartData.forEach(async function(dataPoint){
       if(dataPoint.name = y.id.toString()){
         const isOnline = await isIpOnline(y.ip);
+        console.log(y.ip)
         if(isOnline){
-          dataPoint.data.push((await (await fetch("http://" + y.ip + ":80/")).json()));
-          console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mNew data collected!', dataPoint);
+          try{
+            dataPoint.data.push((await (await fetch("http://" + y.ip + ":80/")).json()));
+            console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mNew data collected!', dataPoint);
+          }
+          catch{}
         }
         else{
           dataPoint.data.push({"soilHum1": 0, 'soilHum2': 0, 'airTemp': 0, 'airHum':0, 'light': 0});
