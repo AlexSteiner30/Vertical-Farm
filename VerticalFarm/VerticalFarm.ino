@@ -192,9 +192,15 @@ void startServer() {
               }
             }
           } else if (currentLine == "GET /fans") {
-            Serial.println("Turning Fans On/Off");
+            Serial.print("Turning Fans ");
             fans = !fans;
-            digitalWrite(RELAYPIN_WATER_MOTOR, fans ? HIGH : LOW);
+            Serial.println(fans);
+            if(fans == 0){
+              digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
+            }
+            else{
+              digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
+            }
           }
         }
       }

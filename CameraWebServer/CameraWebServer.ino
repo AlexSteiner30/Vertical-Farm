@@ -8,6 +8,9 @@
 
 #include "camera_pins.h"
 
+const char* ssid = "James ";
+const char* pass = "james007";
+
 void startCameraServer();
 void setupLedFlash(int pin);
 
@@ -102,7 +105,7 @@ void setup() {
   setupLedFlash(LED_GPIO_NUM);
 #endif
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, pass);
   WiFi.setSleep(false);
 
   while (WiFi.status() != WL_CONNECTED) {
