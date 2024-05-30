@@ -22,14 +22,13 @@ int idealHum = 75;
 int idealLight = 600;
 
 bool fans = false;
+bool motor = false;
 
 const char* ssid = "James ";
 const char* pass = "james007";
 
-String data;
-
 String serverName = "172.20.10.3";
-String cameraIP = "172.20.10.3";
+String cameraIP = "172.26.16.34";
 
 String serverPath = "/";
 String ID;
@@ -46,6 +45,8 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
+  Serial.println("Device Started!");
+
   dht.begin();
   Wire.begin();
   lightMeter.begin();
@@ -54,7 +55,7 @@ void setup() {
   pinMode(RELAYPIN_FAN_MOTOR, OUTPUT);
   pinMode(RELAYPIN_LIGHT, OUTPUT);
 
-  digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
+  digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
   digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
   digitalWrite(RELAYPIN_LIGHT, HIGH);
 
@@ -195,12 +196,14 @@ void startServer() {
             Serial.print("Turning Fans ");
             fans = !fans;
             Serial.println(fans);
-            if(fans == 0){
-              digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
-            }
-            else{
-              digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
-            }
+            if(fans == 0){ digitalWrite(RELAYPIN_FAN_MOTOR, LOW); }
+            else{ digitalWrite(RELAYPIN_FAN_MOTOR, HIGH); }
+          } else if (currentLine == "GET /motor") {
+            Serial.print("Turning Motor ");
+            motor = !motor;
+            Serial.println(motor);
+            if(motor == 0){ digitalWrite(RELAYPIN_WATER_MOTOR, LOW); }
+            else{ digitalWrite(RELAYPIN_WATER_MOTOR, HIGH); }
           }
         }
       }

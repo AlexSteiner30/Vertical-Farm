@@ -217,6 +217,18 @@
             </div>
 
           </div><!-- End Customers Card -->
+
+          <div class="col-xxl-12 col-xl-12">
+            <div class="card info-card customers-card">
+              <div class="card-body">
+                <h5 class="card-title">Water Pump</span></h5>
+
+                <div class="d-flex align-items-center">
+                  <button onclick="motor()" type="submit" class="btn btn-primary">Disable / Enable</button>
+              </div>
+            </div>
+
+          </div><!-- End Customers Card -->
     
 
           <div class="card">
@@ -320,6 +332,11 @@
     async function fans(){
       alert("Fans were disabled/enabled");
       await fetch("http://<%=ip%>:80/fans");
+    }
+
+    async function motor(){
+      alert("Water pump was disabled/enabled");
+      await fetch("http://<%=ip%>:80/motor");
     }
 
     function rotatePhoto() {
