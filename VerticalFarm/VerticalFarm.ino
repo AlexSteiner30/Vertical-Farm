@@ -225,7 +225,7 @@ void sensors() {
 }
 
 void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
-  if (soilH1 > idealSoil + 250 || soilH2 > idealSoil + 250) {
+  if ((soilH1 > idealSoil + 250 || soilH2 > idealSoil + 250) && !motor) {
     digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
     delay(10000);
     digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
