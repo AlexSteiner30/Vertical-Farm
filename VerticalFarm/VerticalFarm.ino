@@ -16,7 +16,7 @@ BH1750 lightMeter(0x23);
 
 int status = WL_IDLE_STATUS;
 
-int idealSoil = 700;
+int idealSoil = 40;
 int idealTemp = 25;
 int idealHum = 75;
 int idealLight = 600;
@@ -24,11 +24,11 @@ int idealLight = 600;
 bool fans = false;
 bool motor = false;
 
-const char* ssid = "James ";
-const char* pass = "james007";
+const char* ssid = "Student_SmartDevice";
+const char* pass = "Sm4rtD3v!c3";
 
-String serverName = "172.20.10.3";
-String cameraIP = "172.26.16.34";
+String serverName = "172.26.16.41";
+String cameraIP = "172.26.16.6";
 
 String serverPath = "/";
 String ID;
@@ -44,8 +44,6 @@ HttpClient httpClient = HttpClient(wifiClient, serverName, serverPort);
 void setup() {
   Serial.begin(115200);
   Serial.println();
-
-  Serial.println("Device Started!");
 
   dht.begin();
   Wire.begin();
@@ -66,7 +64,7 @@ void setup() {
 }
 
 void loop() {
-  sensors();
+   
 }
 
 void wifiConnection() {
@@ -133,6 +131,8 @@ void startServer() {
   Serial.println("Server started");
 
   while (true) {
+    sensors();
+
     WiFiClient client = server.available();
     if (client) {
       String currentLine = "";
@@ -146,9 +146,9 @@ void startServer() {
               client.println();
 
               float h = dht.readHumidity();
-              float t = dht.readTemperature();
-              int soilH1 = analogRead(A1);
-              int soilH2 = analogRead(A2);
+              float t = dht.readTemperature(true);
+              int soilH1 = int(analogRead(A1) / 10);
+              int soilH2 = int(analogRead(A2) / 10);
               uint16_t lux = lightMeter.readLightLevel();
 
               String data = "{\"airHum\":\"" + String(h) + "\",\"airTemp\":\"" + String(t) + "\",\"soilHum1\":\"" + String(soilH1) + "\",\"soilHum2\":\"" + String(soilH2) + "\",\"light\":\"" + String(lux) + "\"}";
@@ -214,9 +214,9 @@ void startServer() {
 
 void sensors() {
   float h = dht.readHumidity();
-  float t = dht.readTemperature();
-  int soilH1 = analogRead(A1);
-  int soilH2 = analogRead(A2);
+  float t = dht.readTemperature(true);
+  int soilH1 = int(analogRead(A1) / 10);
+  int soilH2 = int(analogRead(A2) / 10);
   uint16_t lux = lightMeter.readLightLevel();
 
   motorControll(h, t, soilH1, soilH2, lux);
@@ -225,15 +225,16 @@ void sensors() {
 }
 
 void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
-  if ((soilH1 > idealSoil + 250 || soilH2 > idealSoil + 250) && !motor) {
+
+  if (soilH1 > idealSoil + 15 || soilH2 > idealSoil + 15) {
     digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
-    delay(10000);
-    digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
+  }else if(!motor){
+     digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
   }
-  if ((t > idealTemp + 7 || h > idealHum + 20 || h < idealHum - 20) && fans) {
+  if (t > idealTemp + 5 || h > idealHum + 10) {
     digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
-  } else {
-    digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
+  } else if(!fans){
+    digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
   }
   if (lux > idealLight + 100) {
     digitalWrite(RELAYPIN_LIGHT, LOW);

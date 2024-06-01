@@ -8,8 +8,10 @@
 
 #include "camera_pins.h"
 
-const char* ssid = "James ";
-const char* pass = "james007";
+#define LED_BUILTIN 4
+
+const char* ssid = "Student_SmartDevice";
+const char* pass = "Sm4rtD3v!c3";
 
 void startCameraServer();
 void setupLedFlash(int pin);
@@ -18,6 +20,8 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
+
+  pinMode(LED_BUILTIN, OUTPUT);
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -114,6 +118,10 @@ void setup() {
   }
   Serial.println("");
   Serial.println("WiFi connected");
+
+  Serial.print("Use 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("' to connect");
 
   startCameraServer();
 }

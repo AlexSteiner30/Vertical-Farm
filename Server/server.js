@@ -140,10 +140,10 @@ app.post('/add-farm', async (req, res) => {
         cameraIP: req.body.camera_ip,
         password: req.body.password, 
         plantType: "Potatoes", 
-        soilHum: 50, 
-        airTemp: 24, 
-        airHum: 399, 
-        light:139
+        soilHum: 40, 
+        airTemp: 25, 
+        airHum: 75, 
+        light:600
       });
     
       await farm.save();
@@ -209,7 +209,7 @@ async function loadFarms(){
         await Farm.find({}).then(x => x.forEach(function(z){
           y = z;
         })).then()
-          res.render('farm', {id:y._id.toString(), isOnline:isOnline, farms:farms, ip:y.ip, camera_ip:y.camera_ip, farm_name:y.name, data: data, name: y.name, ssid: y.ssid, password: y.password, plantType: y.plantType, soilHum: y.soilHum, airTemp: y.airTemp, airHum: y.airHum, light: y.light});
+          res.render('farm', {id:y._id.toString(), isOnline:isOnline, farms:farms, ip:y.ip, camera_ip:y.cameraIP, farm_name:y.name, data: data, name: y.name, ssid: y.ssid, password: y.password, plantType: y.plantType, soilHum: y.soilHum, airTemp: y.airTemp, airHum: y.airHum, light: y.light});
     });
 
     app.post(`/farm/${y._id}/update`, async (req, res) => {
