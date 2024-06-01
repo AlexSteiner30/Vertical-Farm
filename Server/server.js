@@ -111,7 +111,7 @@ app.get('/', async (req, res) => {
           farms: farms,
           activeFarms: activeFarms,
           nonActiveFarms: nonActiveFarms,
-          powerUsage: (0.8 * 9) * 3 * activeFarms,
+          powerUsage: (0.8 * 9) * 4 * activeFarms,
           tomatoesCount: tomatoesCount,
           potatoCount: potatoCount,
           strawberryCount: strawberryCount,
@@ -229,6 +229,8 @@ async function loadFarms(){
         if(req.body.light){light=req.body.light};
 
         recentActivity.push('Farm with IP <strong>' + z.ip + "</strong> was updated" );
+
+        collectData();
 
         await Farm.findOneAndUpdate({_id: z._id}, {name:farmName, plantType: plantType, soilHum: soilHum, airTemp: airTemp, airHum:airHum, light:light}).then(updated_farm=>{
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + z.ip + ' \x1b[0mwas updated\x1b[32m successfully\x1b[0m!', updated_farm);
