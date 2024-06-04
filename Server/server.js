@@ -23,7 +23,6 @@ app.use((req,res,next) =>{
   next();
 });
 
-
 var chartData = [];
 var recentActivity = [];
 
@@ -38,6 +37,7 @@ async function isIpOnline(ip) {
       });
   });
 }
+
 const Farm = mongoose.model('Farm', {
   name: String, 
   ssid: String, 
@@ -50,7 +50,6 @@ const Farm = mongoose.model('Farm', {
   airHum: Number, 
   light: Number
 });
-
 
 app.get('/', async (req, res) => {
   try {
@@ -130,7 +129,6 @@ app.get('/', async (req, res) => {
 });
 
 app.post('/add-farm', async (req, res) => {
-
   Farm.exists({"ip": req.body.ip}).then(async result => { 
     if(!result){
       const farm = new Farm({
@@ -196,10 +194,15 @@ async function loadFarms(){
 
       const isOnline = await isIpOnline(y.ip);
       if(isOnline){
-        data = await (await fetch("http://" + y.ip + ":80/")).json();
+        try{
+          data = await (await fetch("http://" + y.ip + ":80/")).json();
+        }
+        catch{
+          data = {"soilHum1": "N/A", "soilHum2": "N/A", "airHum": "N/A", "airTemp": "N/A", "light":"N/A"};
+        }
       }
       else{
-        data = {"soilHum1": "N/A", "soilHum2": "N/A", "airHum": "N/A", "airTemp": "N/A", "light":"N/A"}
+        data = {"soilHum1": "N/A", "soilHum2": "N/A", "airHum": "N/A", "airTemp": "N/A", "light":"N/A"};
       }
 
       await Farm.find({}).then(x => x.forEach(function(y){
@@ -236,7 +239,7 @@ async function loadFarms(){
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[0mFarm with IP \x1b[90m' + z.ip + ' \x1b[0mwas updated\x1b[32m successfully\x1b[0m!', updated_farm);
         });
 
-        await fetch('http://' + req.body.ip + ':80/update')
+        await fetch('http://' + y.ip + ':80/update')
         .then(
           console.log('\x1b[37m[' + new Date().toISOString() + '] ' + '\x1b[Update request to \x1b[90m' + req.body.ip + ' \x1b[0mwas\x1b[32m successfull\x1b[0m!')
         )
@@ -255,6 +258,11 @@ async function loadFarms(){
       var light = y.light;
 
       res.send("soilHum:"+soilHum.toString() + ",airTemp:" + airTemp.toString() + ",airHum:" + airHum.toString() + ",light:" + light.toString());
+    });
+
+    app.post(`/farm/${y._id}/delete`, async (req, res) => {
+      await Farm.deleteOne({ _id: y.id });
+      res.redirect('/');
     });
   }));
 }

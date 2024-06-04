@@ -1,6 +1,4 @@
 #include "DHT.h"
-#include <Wire.h>
-#include <BH1750.h>
 #include <WiFiS3.h>
 #include <ArduinoHttpClient.h>
 
@@ -12,23 +10,21 @@
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
-BH1750 lightMeter(0x23);
-
 int status = WL_IDLE_STATUS;
 
 int idealSoil = 40;
 int idealTemp = 25;
-int idealHum = 75;
-int idealLight = 600;
+int idealHum = 50;
+int idealLight = 100;
 
-bool fans = false;
-bool motor = false;
+bool fans = true;
+bool motor = true;
 
 const char* ssid = "Student_SmartDevice";
 const char* pass = "Sm4rtD3v!c3";
 
-String serverName = "172.26.16.41";
-String cameraIP = "172.26.16.6";
+String serverName = "172.26.16.74";
+String cameraIP = "172.26.16.78";
 
 String serverPath = "/";
 String ID;
@@ -46,8 +42,6 @@ void setup() {
   Serial.println();
 
   dht.begin();
-  Wire.begin();
-  lightMeter.begin();
 
   pinMode(RELAYPIN_WATER_MOTOR, OUTPUT);
   pinMode(RELAYPIN_FAN_MOTOR, OUTPUT);
@@ -78,6 +72,22 @@ void wifiConnection() {
   Serial.print("Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
+
+  byte mac[6]; 
+
+  WiFi.macAddress(mac);
+  Serial.print("MAC: ");
+  Serial.print(mac[5],HEX);
+  Serial.print(":");
+  Serial.print(mac[4],HEX);
+  Serial.print(":");
+  Serial.print(mac[3],HEX);
+  Serial.print(":");
+  Serial.print(mac[2],HEX);
+  Serial.print(":");
+  Serial.print(mac[1],HEX);
+  Serial.print(":");
+  Serial.println(mac[0],HEX);
 
   while (firstConnection) {
     if (wifiClient.connect(serverName.c_str(), serverPort)) {
@@ -114,7 +124,6 @@ void wifiConnection() {
       Serial.print("Response Code: ");
       Serial.println(httpResponseCode);
 
-
       String sensorData = httpClient.responseBody();
       updateSensorData(sensorData);
 
@@ -146,10 +155,10 @@ void startServer() {
               client.println();
 
               float h = dht.readHumidity();
-              float t = dht.readTemperature(true);
+              float t = dht.readTemperature();
               int soilH1 = int(analogRead(A1) / 10);
               int soilH2 = int(analogRead(A2) / 10);
-              uint16_t lux = lightMeter.readLightLevel();
+              unsigned int lux = analogRead(A0);
 
               String data = "{\"airHum\":\"" + String(h) + "\",\"airTemp\":\"" + String(t) + "\",\"soilHum1\":\"" + String(soilH1) + "\",\"soilHum2\":\"" + String(soilH2) + "\",\"light\":\"" + String(lux) + "\"}";
 
@@ -214,10 +223,10 @@ void startServer() {
 
 void sensors() {
   float h = dht.readHumidity();
-  float t = dht.readTemperature(true);
+  float t = dht.readTemperature();
   int soilH1 = int(analogRead(A1) / 10);
   int soilH2 = int(analogRead(A2) / 10);
-  uint16_t lux = lightMeter.readLightLevel();
+  unsigned int lux = analogRead(A0);
 
   motorControll(h, t, soilH1, soilH2, lux);
 
@@ -225,42 +234,44 @@ void sensors() {
 }
 
 void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
-
-  if (soilH1 > idealSoil + 15 || soilH2 > idealSoil + 15) {
+  if ((soilH1 > idealSoil + 15 || soilH2 > idealSoil + 15) && motor) {
     digitalWrite(RELAYPIN_WATER_MOTOR, HIGH);
-  }else if(!motor){
-     digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
+  }else{
+    motor = false;
+    digitalWrite(RELAYPIN_WATER_MOTOR, LOW);
   }
-  if (t > idealTemp + 5 || h > idealHum + 10) {
+  if ((t > idealTemp + 5 || h > idealHum + 10) && fans) {
     digitalWrite(RELAYPIN_FAN_MOTOR, HIGH);
-  } else if(!fans){
+  } else{
+    fans = false;
     digitalWrite(RELAYPIN_FAN_MOTOR, LOW);
   }
-  if (lux > idealLight + 100) {
+  if (lux > idealLight + 50) {
     digitalWrite(RELAYPIN_LIGHT, LOW);
-  } else if (lux < idealLight - 100) {
+  } else if (lux < idealLight - 50) {
     digitalWrite(RELAYPIN_LIGHT, HIGH);
   }
 }
 
 void updateSensorData(String sensorData) {
   int commaIndex = sensorData.indexOf(',');
-
   String soilHumReading = sensorData.substring(sensorData.indexOf(':') + 1, commaIndex);
   sensorData = sensorData.substring(commaIndex + 1);
 
-  int sensor2CommaIndex = sensorData.indexOf(',');
-  String airTempReading = sensorData.substring(sensorData.indexOf(':') + 1, sensor2CommaIndex);
-  sensorData = sensorData.substring(sensor2CommaIndex);
+  commaIndex = sensorData.indexOf(',');
+  String airTempReading = sensorData.substring(sensorData.indexOf(':') + 1, commaIndex);
+  sensorData = sensorData.substring(commaIndex + 1);
 
-  int sensor3CommaIndex = sensorData.indexOf(',');
-  String airHumReading = sensorData.substring(sensorData.indexOf(':') + 1, sensor3CommaIndex);
-  sensorData = sensorData.substring(sensor2CommaIndex);
+  commaIndex = sensorData.indexOf(',');
+  String airHumReading = sensorData.substring(sensorData.indexOf(':') + 1, commaIndex);
+  sensorData = sensorData.substring(commaIndex + 1);
 
-  String lightReading = sensorData.substring(sensorData.indexOf(':') + 1);
+  commaIndex = sensorData.indexOf(',');
+  String lightReading = sensorData.substring(sensorData.indexOf(':') + 1, commaIndex);
+  sensorData = sensorData.substring(commaIndex + 1);
 
   idealSoil = soilHumReading.toInt();
   idealTemp = airTempReading.toInt();
-  idealHum = soilHumReading.toInt();
+  idealHum = airHumReading.toInt();
   idealLight = lightReading.toInt();
 }
