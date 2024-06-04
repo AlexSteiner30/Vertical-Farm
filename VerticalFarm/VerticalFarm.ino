@@ -229,8 +229,6 @@ void sensors() {
   unsigned int lux = analogRead(A0);
 
   motorControll(h, t, soilH1, soilH2, lux);
-
-  delay(2000);
 }
 
 void motorControll(float h, float t, int soilH1, int soilH2, uint16_t lux) {
